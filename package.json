@@ -1,6 +1,14 @@
 {
   "name": "gobble-giblets",
-  "private": true,
+  "license": "MIT",
+  "version": "0.0.1",
+  "description": "A plugin for gobble to manage dependencies",
+  "homepage": "https://github.com/evs-chris/gobble-giblets",
+  "author": { "name": "Chris Reeves" },
+  "main": "index.js",
+  "repository": { "type": "git", "url": "https://github.com/evs-chris/gobble-giblets.git" },
+  "files": [ "package.json", "index.js", "LICENSE.md" ],
+  "keywords": [ "gobble-plugin", "gobble", "dependencies" ],
   "dependencies": {
     "sander": "^0",
     "request-promise": "^0.2"

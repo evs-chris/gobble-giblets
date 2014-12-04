@@ -7,6 +7,7 @@ var sander = require('sander'),
 
 function giblets(input, output, opts) {
   var env = opts.environment || opts.env || 'development';
+  var adapt = 'adapt' in opts ? opts.adapt : true;
 
   return sander.readFile(input, 'giblet.json').then(toJSON).then(function(json) {
     var deps = json[env] || {}, gh = deps.giblethub || [];
@@ -44,7 +45,7 @@ function giblets(input, output, opts) {
       if (repo.length > 2) path = repo.slice(2).join('/');
       repo = repo[0] + '/' + repo[1];
 
-      details.base = output, details.name = name, details.repo = repo, details.version = version, details.path = path;
+      details.adapt = adapt, details.base = output, details.name = name, details.repo = repo, details.version = version, details.path = path;
 
       // manual definition
       if (details && (details.scripts || details.styles || details.files)) {
@@ -109,7 +110,7 @@ function processGiblethub(obj) {
       result = cache(obj, src, dest);
 
       // for js (scripts), work with whatever modules are already there
-      if (j === 0) {
+      if (obj.adapt && j === 0) {
         if (obj.type === 'cjs') {
           result = result.then(deCJS);
         } else if (obj.type === 'umd') {

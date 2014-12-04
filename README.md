@@ -12,6 +12,8 @@ giblets isn't currently deployed to npm, as it is very very experimental-alpha-m
 cd ~/my/project/dir
 cd node_modules
 git clone https://github.com/evs-chris/gobble-giblets
+cd gobble-giblets
+npm install
 ```
 
 ## Usage
@@ -22,7 +24,9 @@ giblets expects to be run against a directory with a `giblets.json` file at the 
 var libs = gobble('giblets').transform('giblets');
 ```
 
-The only option that is currently supported, is `environment` or `env`, which is defaulted to development.
+### Options
+* `environment` - alias `env` - defaults to `'development'` - which environment key to use in the configuration
+* `adapt` - defaults to `true` - automatically turn `type`d dependencies into es6-style modules
 
 ## Configuration
 
@@ -45,6 +49,8 @@ The `giblethub` provider makes use of the `.giblets` cache in the root of your p
   Using `target` to rename a file is handy for things like Ractive where the deployed script name is `ractive.js`, but you may want to rename it to `index.js` to reference it using
   ```js
   import Ractive from 'ractive';
+  // rather than
+  import Ractive from 'ractive/ractive';
   ```
   `scripts` will also be adjusted to use es6 modules if the dependency has a `type` specified.
 * `styles` - an array of filenames to retrieve
@@ -79,4 +85,8 @@ If this project is useful/successful, here some things that it will probably be 
 * resolution of version numbers using `semver`
 * perhaps some sort of npm provider, to behave like a browserify that doesn't hate non-script files
 * other providers
-* style processing
+* style/asset processing of some sort? gobble may already have this covered
+
+## License
+
+Copyright (c) 2012-14 Chris Reeves. Released under an [MIT license](https://github.com/evs-chris/gobble-giblets/blob/master/LICENSE.md).
