@@ -6,14 +6,11 @@ Pull in dependencies with gobble.
 
 First, you need to have gobble installed - see the [gobble readme](https://github.com/gobblejs/gobble) for details. It also expects to be used with es6 modules, so [esperanto](https://github.com/Rich-Harris/esperanto), which also has gobble plugins, comes in handy.
 
-giblets isn't currently deployed to npm, as it is very very experimental-alpha-may-destroy-Tokyo-quality, so you have to clone it into your `node_modules` manually:
+giblets isn't currently deployed to npm, as it is very very experimental-alpha-may-destroy-Tokyo-quality, so you have install it from this repo:
 
 ```bash
-cd ~/my/project/dir
-cd node_modules
-git clone https://github.com/evs-chris/gobble-giblets
-cd gobble-giblets
-npm install
+cd ~/my/gobble/project/dir
+npm install evs-chris/gobble-giblets
 ```
 
 ## Usage
