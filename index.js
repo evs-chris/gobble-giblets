@@ -9,7 +9,7 @@ function giblets(input, output, opts) {
   var env = opts.environment || opts.env || 'development';
   var adapt = 'adapt' in opts ? opts.adapt : true;
 
-  return sander.readFile(input, 'giblet.json').then(toJSON).then(function(json) {
+  return sander.readFile(input, 'giblets.json').then(toJSON).then(function(json) {
     var deps = json[env] || {}, gh = deps.giblethub || [];
     var results = [];
     var version, repo, name, path = '', details;
