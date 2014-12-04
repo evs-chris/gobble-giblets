@@ -1,0 +1,8 @@
+{
+  "name": "gobble-giblets",
+  "private": true,
+  "dependencies": {
+    "sander": "^0",
+    "request-promise": "^0.2"
+  }
+}
