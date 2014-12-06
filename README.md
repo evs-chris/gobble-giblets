@@ -24,6 +24,7 @@ var libs = gobble('giblets').transform('giblets');
 ### Options
 * `environment` - alias `env` - defaults to `'development'` - which environment key to use in the configuration
 * `adapt` - defaults to `true` - automatically turn `type`d dependencies into es6-style modules
+* `cacheDir` - defaults to `process.cwd() + '/.giblets'` - the cache directory for downloaded files
 
 ## Configuration
 
@@ -52,12 +53,19 @@ The `giblethub` provider makes use of the `.giblets` cache in the root of your p
   `scripts` will also be adjusted to use es6 modules if the dependency has a `type` specified.
 * `styles` - an array of filenames to retrieve
 * `files` - an array of filenames to retrieve
+* `adapt` - overrides the transform option
 
 If there are no `files`, `scripts`, or `styles` specified, then giblets will look for a `giblet.json` in the repo for the details. If that's available already though, you may want to just go string-style.
 
 #### String-style
 
 If the repo you're targeting already supports giblets (not likely), then you can simply reference it with `"user/repo/path@version"` and giblets will pull the `giblet.json` and handle everything else from there. `path` is optional, as with object-style descriptors, but can be handy for libraries that have lots of independant related components.
+
+### Component
+
+giblets has very basic support for [components](https://github.com/componentjs/component). The `component` key for an environment should be provided in roughly the same way as the `dependencies` key in a `component.json` file. Semver versions are not supported at this time, so you have to specify an explicit version. Component dependencies are also not supported at this time, so you will have to add all of your dependencies dependencies to your `giblet.json` manually.
+
+Components will automatically be processed to convert their `require`s into ES6 import statements. The main module will also be moved to `index.js` if it is something else, so that the component can be imported as `import component from 'component'`.
 
 ## Sample Configuration
 
@@ -68,7 +76,10 @@ If the repo you're targeting already supports giblets (not likely), then you can
       { "repo": "ractivejs/ractive", "version": "edge", "scripts": [ { "file": "ractive.js", "target": "index.js" } ], "type": "umd" },
       { "repo": "yahoo/pure/src", "version": "v0.5.0", "styles": [ "base/css/base.css", "grids/css/grids-core.css" ] },
       "some-magical/bootstrapthing/pieces/autocomplete@12.0.1919"
-    ]
+    ],
+    "component": {
+      "": ""
+    }
   }
 }
 ```
@@ -77,7 +88,7 @@ If the repo you're targeting already supports giblets (not likely), then you can
 
 If this project is useful/successful, here some things that it will probably be adjusted to handle:
 
-* [component](https://github.com/componentjs/component) repos
+* better component support
 * dependency dependents
 * resolution of version numbers using `semver`
 * perhaps some sort of npm provider, to behave like a browserify that doesn't hate non-script files
@@ -86,4 +97,4 @@ If this project is useful/successful, here some things that it will probably be 
 
 ## License
 
-Copyright (c) 2012-14 Chris Reeves. Released under an [MIT license](https://github.com/evs-chris/gobble-giblets/blob/master/LICENSE.md).
+Copyright (c) 2014 Chris Reeves. Released under an [MIT license](https://github.com/evs-chris/gobble-giblets/blob/master/LICENSE.md).
