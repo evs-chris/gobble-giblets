@@ -88,7 +88,7 @@ function processGibletHub(gh, opts) {
     if (repo.length > 2) path = repo.slice(2).join('/');
     repo = repo[0] + '/' + repo[1];
 
-    details.adapt = opts.adapt, details.base = opts.output, details.name = name, details.repo = repo, details.version = version, details.path = path;
+    details.adapt = opts.adapt, details.base = opts.base, details.name = name, details.repo = repo, details.version = version, details.path = path;
 
     // manual definition
     if (details && (details.scripts || details.styles || details.files)) {
