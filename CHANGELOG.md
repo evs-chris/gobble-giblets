@@ -1,3 +1,7 @@
+## 0.1.2
+
+* __BUG:__ Fixes manual descriptor bug in the GibletHub provider.
+
 ## 0.1.1
 
 * __BUG:__ Fixes string descriptor and common descriptor bugs in GibletHb provider.
