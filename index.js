@@ -21,7 +21,7 @@ function giblets(input, output, opts) {
     results.push(processComponents(deps.component || {}, { base: output, cacheDir: cacheDir }));
 
     return Promise.all(results);
-  }).catch(function(e) { console.log(e); console.log(e.stack); throw e; });
+  });
 }
 
 function cache(details, src, dest, cacheDir, write) {
@@ -64,7 +64,7 @@ function processGibletHub(gh, opts) {
   for (var i = 0; i < gh.length && (giblet = gh[i]); i++) {
     // for repos with a giblet.json: '[&]user/repo[/path]@version'
     if (typeof giblet === 'string') {
-      version = giblet.split('@');
+      giblet = giblet.split('@');
       repo = giblet[0].split('/');
       version = giblet[1];
       details = {};
@@ -88,7 +88,7 @@ function processGibletHub(gh, opts) {
     if (repo.length > 2) path = repo.slice(2).join('/');
     repo = repo[0] + '/' + repo[1];
 
-    details.adapt = adapt, details.base = output, details.name = name, details.repo = repo, details.version = version, details.path = path;
+    details.adapt = opts.adapt, details.base = opts.output, details.name = name, details.repo = repo, details.version = version, details.path = path;
 
     // manual definition
     if (details && (details.scripts || details.styles || details.files)) {
