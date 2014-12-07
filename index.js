@@ -92,7 +92,7 @@ function processGibletHub(gh, opts) {
 
     // manual definition
     if (details && (details.scripts || details.styles || details.files)) {
-      results.push(processGiblethub(details, opts.cacheDir));
+      results.push(processGithub(details, opts.cacheDir));
     }
 
     // grab the giblet.json
