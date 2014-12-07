@@ -1,3 +1,7 @@
+## 0.1.3
+
+* __BUG:__ Fixes yet another manual descriptor bug in the GibletHub provider.
+
 ## 0.1.2
 
 * __BUG:__ Fixes manual descriptor bug in the GibletHub provider.
