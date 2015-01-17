@@ -1,34 +1,53 @@
 module.exports = giblets;
 
-var sander = require('sander'),
-    Promise = sander.Promise,
-    request = require('request-promise'),
-    path = require('path');
+var request = require('request-promise'),
+    path = require('path'),
+    sander, Promise;
+
+function noop() {}
 
 function giblets(input, output, opts) {
-  var env = opts.environment || opts.env || 'development';
+  var env = opts.environment || opts.env || this.env || 'development';
   var adapt = 'adapt' in opts ? opts.adapt : true;
   var cacheDir = opts.cacheDir || path.resolve(process.cwd(), '.giblets');
+  var log = this.log || noop;
+  var context = { log: log };
 
-  return sander.readFile(input, 'giblets.json').then(toJSON).then(function(json) {
+  if (!giblets.inited) {
+    giblets.inited = true;
+    sander = this.sander;
+    Promise = sander.Promise;
+  }
+
+  function processConfig(json) {
     var deps = json[env] || {},
         results = [];
 
     // process giblethub
-    results.push(processGibletHub(deps.giblethub || [], { base: output, adapt: adapt, cacheDir: cacheDir }));
+    results.push(processGibletHub.call(context, deps.giblethub || [], { base: output, adapt: adapt, cacheDir: cacheDir }));
 
     // process components
-    results.push(processComponents(deps.component || {}, { base: output, cacheDir: cacheDir }));
+    results.push(processComponents.call(context, deps.component || {}, { base: output, cacheDir: cacheDir }));
 
     return Promise.all(results);
-  });
+  }
+
+  if (typeof opts.giblets === 'object') {
+    return processConfig(opts.giblets);
+  } else {
+    return sander.readFile(input, opts.gibletfile || 'giblets.json').then(toJSON).then(processConfig);
+  }
 }
+
+giblets.inited = false;
 
 function cache(details, src, dest, cacheDir, write) {
   if (!dest) dest = src;
 
-  var cached = path.resolve(cacheDir, details.name, details.version, dest),
-      ghf = 'https://raw.githubusercontent.com/' + details.repo + '/' + details.version + '/' + details.path + src;
+  var cached = path.resolve(cacheDir, details.name, (details.version || 'master'), dest),
+      ghid = details.repo + '/' + (details.version || 'master') + '/' + details.path + src,
+      ghf = 'https://raw.githubusercontent.com/' + ghid,
+      ctx = this;
 
   // return the cached file, if it's there
   return sander.readFile(cached).then(
@@ -36,8 +55,9 @@ function cache(details, src, dest, cacheDir, write) {
       if (write) return sander.writeFile(write, data).then(function() { return data; });
       else return data;
     },function() { // otherwise fetch it
-      return request(ghf).then(function(data) {
+      return request({ url: ghf, encoding: null }).then(function(data) {
         return sander.writeFile(cached, data).then(function() { // and cache it
+          if (ctx.log) ctx.log('retrieved ' + ghid);
           // and write it out if requested
           if (write) return sander.writeFile(write, data).then(function() { return data; });
           else return data;
@@ -49,13 +69,18 @@ function cache(details, src, dest, cacheDir, write) {
 
 function processGibletHub(gh, opts) {
   var results = [],
-      version, repo, name, path = '', details;
+      version, repo, name, path = '', details, ctx = this;
 
   function gibletFile(obj, dest) {
     dest.name = dest.name || obj.name;
-    dest.repo = obj.repo;
-    dest.path = obj.path;
-    dest.version = obj.version;
+    dest.repo = 'repo' in obj ? obj.repo : dest.repo;
+    dest.path = 'path' in obj ? obj.path : dest.path;
+    dest.type = obj.type;
+    dest.scripts = obj.scripts;
+    dest.styles = obj.styles;
+    dest.fonts = obj.fonts;
+    dest.files = obj.files;
+    if (!dest.version) dest.version = obj.version;
     dest.base = opts.base;
     dest.adapt = 'adapt' in dest ? dest.adapt : ('adapt' in obj ? obj.adapt : opts.adapt);
     return dest;
@@ -75,7 +100,7 @@ function processGibletHub(gh, opts) {
       }
     }
 
-    // object description { repo, version, [ scripts, styles, files ] }
+    // object description { repo, version, [type], [ scripts, styles, files, fonts ] }
     else {
       repo = giblet.repo.split('/');
       version = giblet.version;
@@ -88,20 +113,21 @@ function processGibletHub(gh, opts) {
     if (repo.length > 2) path = repo.slice(2).join('/');
     repo = repo[0] + '/' + repo[1];
 
-    details.adapt = opts.adapt, details.base = opts.base, details.name = name, details.repo = repo, details.version = version, details.path = path;
+    details.adapt = 'adapt' in details ? details.adapt : opts.adapt;
+    details.base = opts.base, details.name = name, details.repo = repo, details.version = version, details.path = path;
 
     // manual definition
-    if (details && (details.scripts || details.styles || details.files)) {
-      results.push(processGithub(details, opts.cacheDir));
+    if (details && (details.scripts || details.styles || details.files || details.fonts)) {
+      results.push(processGithub.call(ctx, details, opts.cacheDir));
     }
 
     // grab the giblet.json
     else {
       (function(details) {
-        results.push(cache(details, 'giblet.json', null, opts.cacheDir)
+        results.push(cache.call(ctx, details, 'giblet.json', null, opts.cacheDir)
           .then(toJSON)
           .then(function(obj) { return gibletFile(obj, details); })
-          .then(function(details) { return processGithub(details, opts.cacheDir); })
+          .then(function(details) { return processGithub.call(ctx, details, opts.cacheDir); })
         );
       })(details);
     }
@@ -112,7 +138,7 @@ function processGibletHub(gh, opts) {
 
 var validComponentVersion = /^[-0-9a-z\._]+$/i;
 function processComponents(components, opts) {
-  var results = [], repo, version, details;
+  var results = [], repo, version, details, ctx = this;
 
   for (repo in components) {
     version = components[repo];
@@ -134,7 +160,7 @@ function processComponents(components, opts) {
 
     // grab the component.json
     (function(details) {
-      results.push(cache(details, 'component.json', null, opts.cacheDir)
+      results.push(cache.call(ctx, details, 'component.json', null, opts.cacheDir)
         .then(toJSON)
         .then(function(obj) {
           var version = details.version;
@@ -144,7 +170,7 @@ function processComponents(components, opts) {
           details.files = (details.files || [])
             .concat(details.fonts || [], details.images || []);
           details.scripts = details.scripts.map(function(f) { if (details.main === f) return { file: f, target: 'index.js' }; else return f; });
-          return processGithub(details, opts.cacheDir);
+          return processGithub.call(ctx, details, opts.cacheDir);
         })
       );
     })(details);
@@ -159,16 +185,16 @@ function requireToImports(match, name, mod) {
 }
 
 function deUMD(data) {
-  return 'var module = { exports: {} };\n' + data + '\nexport default module.exports;';
+  return 'var module = { exports: {} }, exports = module.exports;\nfunction require() { throw new Error(\'Not implemented.\'); }\n' + data + '\nexport default module.exports;';
 }
 
 function deCJS(data) {
   data = data.toString().replace(deCJSre, requireToImports);
-  return 'var module = { exports: {} };\n' + data + '\nexport default module.exports;';
+  return 'var module = { exports: {} }, exports = module.exports;\nfunction require() { throw new Error(\'Not implemented.\'); }\n' + data + '\nexport default module.exports;';
 }
 
 function processGithub(obj, cacheDir) {
-  var i, j, part, file, src, dest, parts = [obj.scripts || [], obj.styles || [], obj.files || []];
+  var i, j, part, file, src, dest, parts = [obj.scripts || [], obj.styles || [], obj.files || [], obj.fonts || []];
   var results = [], result;
 
   for (j = 0; j < parts.length && (part = parts[j]); j++) {
@@ -176,7 +202,7 @@ function processGithub(obj, cacheDir) {
       if (typeof file === 'object') src = file.file, dest = file.target;
       else src = file, dest = file;
 
-      result = cache(obj, src, dest, cacheDir);
+      result = cache.call(this, obj, src, dest, cacheDir);
 
       // for js (scripts), work with whatever modules are already there
       if (obj.adapt && j === 0) {
@@ -200,7 +226,7 @@ function writeTo(file) {
   };
 }
 
-function toJSON(data) { return JSON.parse(data); }
+function toJSON(data) { return JSON.parse(data.toString()); }
 
 function clone(obj) { return copyProps(obj, {}); }
 function copyProps(src, dest) {
