@@ -48,6 +48,7 @@ The `giblethub` provider makes use of the `.giblets` cache in the root of your p
   `scripts` will also be adjusted to use es6 modules if the dependency has a `type` specified.
 * `styles` - an array of filenames to retrieve
 * `files` - an array of filenames to retrieve
+* `fonts` - an array of fonts to retrieve
 * `adapt` - overrides the transform option
 
 If there are no `files`, `scripts`, or `styles` specified, then giblets will look for a `giblet.json` in the repo for the details. If that's available already though, you may want to just go string-style.
@@ -83,13 +84,14 @@ Components will automatically be processed to convert their `require`s into ES6 
 
 If this project is useful/successful, here some things that it will probably be adjusted to handle:
 
+* better module adapting and switch to preferring es6 modules by default
 * better component support
 * dependency dependents
 * resolution of version numbers using `semver`
 * perhaps some sort of npm provider, to behave like a browserify that doesn't hate non-script files
 * other providers
-* style/asset processing of some sort? gobble may already have this covered
+* ~~style/asset processing of some sort? gobble may already have this covered~~ see gobble-concat-css
 
 ## License
 
-Copyright (c) 2014 Chris Reeves. Released under an [MIT license](https://github.com/evs-chris/gobble-giblets/blob/master/LICENSE.md).
+Copyright (c) 2014-2015 Chris Reeves. Released under an [MIT license](https://github.com/evs-chris/gobble-giblets/blob/master/LICENSE.md).

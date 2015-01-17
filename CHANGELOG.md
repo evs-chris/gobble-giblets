@@ -1,3 +1,9 @@
+## 0.2.0
+
+* __BUG:__ Fixes issues with reading manifests from repos.
+* __BUG:__ Fixes problem with downloading binary files.
+* __BUG:__ Fixes some issues with module unwrapping.
+
 ## 0.1.3
 
 * __BUG:__ Fixes yet another manual descriptor bug in the GibletHub provider.
